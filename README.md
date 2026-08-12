@@ -1,119 +1,133 @@
 # DUT extension of `zeta-23-lean`
 
-This repository is a fork of Anthropic's [`zeta-23-lean`](https://github.com/anthropics/zeta-23-lean) containing an experimental Lean 4 formalization of a DUT-based strengthening of the simple-zero argument for the Riemann zeta function.
+This repository is a fork of Anthropic's
+[`zeta-23-lean`](https://github.com/anthropics/zeta-23-lean) containing a
+Lean 4 formalization of a DUT-based strengthening of the simple-zero argument
+for the Riemann zeta function.
 
-## Current status
+## Result
 
-The DUT development now kernel-checks the full deduction of the asymptotic headline
+The development gives a **computer-assisted 67.27918% asymptotic lower
+bound for simple zeros on the critical line**.
 
-**67.27918%**
-
-for simple zeros on the critical line, **conditional on one explicitly isolated finite verifier certificate**.
-
-The current milestone is tagged:
+The final fixed-parameter computation uses
 
 ```text
-dut-67.27918
+lambda = 999999999 / 1000000000.
 ```
 
-The minimal one-certificate headline theorem is:
+Lean checks the complete deduction from the finite six-point certificate to
+the 67.27918% headline, including the exact identification of the physical
+sharp Fourier kernel with the scale-free sinc kernel used by the verifier.
+
+The remaining finite inequality was rigorously verified externally using
+Arb/FLINT through `python-flint`.
+
+## Final Lean endpoint
+
+The theorem at the external-computation boundary is
 
 ```lean
-Zeta23.ZeroSide.RankTraceMult.dut_thmD₀_simple_6727918_of_one_certificate
+Zeta23.ZeroSide.RankTraceMult.dut_thmD₀_simple_6727918_of_scaleFree_certificate
 ```
 
-It has the form:
-
-- choose one admissible fixed parameter `λ < 1`,
-- supply one `DUTSharpVerifierCertificate (paramsOf stdProfile λ)`,
-- prove that the corresponding fixed-`λ` DUT rate exceeds `0.6727918`,
-- conclude the asymptotic `67.27918% - ε` simple-zero lower bound.
-
-A stronger exact limiting theorem is also formalized through:
+with hypothesis
 
 ```lean
-Zeta23.ZeroSide.RankTraceMult.dut_thmD₀_simple
+DUTFixedScaleFreeSharpCertificate
 ```
 
-with exact limiting rate
+The following bridge the external scale-free statement to the original DUT
+formalization:
+
+```text
+Zeta23/ZeroSide/DUTVerifierScaleFreePrelude.lean
+Zeta23/ZeroSide/DUTVerifierKernelBridge.lean
+Zeta23/ZeroSide/DUTVerifierCertificateBridge.lean
+```
+
+In particular,
 
 ```lean
-dutHeadlineRate = dutRate (ThmD.cStar 1) 1
+dutDSharpKernel_eq_scaleFree
 ```
 
-and a kernel-checked numerical theorem:
+proves that the normalized sharp Fourier kernel in the Lean development is
+exactly the sinc kernel evaluated by the external verifier.
 
-```lean
-Zeta23.ZeroSide.RankTraceMult.dutHeadlineRate_gt_6727918
+## External finite verifier
+
+The verifier is in
+
+```text
+dut-verifier/verify_dut_six.py
 ```
 
-## What is formalized
+and a successful run is recorded in
 
-The checked DUT chain currently includes:
+```text
+dut-verifier/dut-six-certificate.json
+```
 
-- finite-grid reduction;
-- Poisson reduction and sharp kernel control;
-- six-point Gram/rank-trace transfer;
-- buffered `9.45 -> 9.40` certificate margin;
-- entry-error and transfer-loss limits;
+The run returned
+
+```text
+verified: true
+lambda: 999999999/1000000000
+eta: 27/20000
+R_verifier: 189/20
+grid: 4000
+precision_bits: 128
+nodes: 68772
+splits: 30498
+maximum_depth: 32
+```
+
+Reproduce it with:
+
+```powershell
+py -m pip install "python-flint>=0.8,<1"
+
+py .\dut-verifier\verify_dut_six.py `
+  --progress-every 100000 `
+  --output .\dut-verifier\dut-six-certificate.json
+```
+
+See `dut-verifier/README.md` for the exact verified statement and trust
+boundary.
+
+## What Lean checks
+
+The DUT chain includes:
+
+- finite-grid and Poisson reduction;
+- sharp six-point kernel control;
+- Gram/rank-trace transfer;
+- the buffered `9.45 -> 9.40` margin;
 - eventual local six-block certification;
-- six-phase combinatorics;
-- core specialization;
-- boundary-strip control and `o(N)` asymptotics;
-- generic `Pmat` gluing;
-- phase replacement;
-- six-phase averaged rank-trace inequalities;
-- transfer to the concrete upstream `hat(A_z)` form;
-- Anthropic Assembly tail/seam transfer;
-- exact core-boundary bootstrap;
-- Montgomery-Taylor `cRatio` endgame;
-- DUT self-bootstrap;
-- asymptotic absorption of all DUT-specific error terms;
-- `λ -> 1^-` limiting argument;
-- an exact rational/trigonometric Lean proof certifying the `67.27918%` displayed constant.
+- six-phase combinatorics and replacement;
+- boundary-strip and `o(N)` control;
+- transfer to the concrete upstream `hat(A_z)`;
+- Assembly seam and tail estimates;
+- self-bootstrap and `cRatio` endgame;
+- the `lambda -> 1` limiting argument;
+- the exact rational/trigonometric numerical bound;
+- reduction to one explicit rational lambda;
+- exact physical-kernel to scale-free-verifier identification.
 
-## Remaining verification boundary
+## Trust boundary
 
-The remaining external obligation is:
+This is a **computer-assisted formalization**, not a fully Lean-kernel-checked
+end-to-end computation.
 
-```lean
-DUTSharpVerifierCertificate P
-```
+Lean checks the mathematical deduction and the exact reduction to the
+finite scale-free proposition. Arb/FLINT checks that finite proposition.
 
-This is intentionally isolated as the contract for the finite rigorous six-point verifier.
-
-The global analytic and asymptotic deduction downstream of that contract is checked by Lean. The current public result should therefore be described as:
-
-> A Lean-kernel-checked deduction of a 67.27918% simple-zero lower bound, conditional on one finite DUT verifier certificate.
-
-The immediate next goal is to discharge this certificate at one suitable explicit rational value of `λ`.
-
-## Important files
-
-The later-stage DUT modules include:
-
-```text
-Zeta23/ZeroSide/DUTHatAzPhase.lean
-Zeta23/ZeroSide/DUTAssemblySeamAllCore.lean
-Zeta23/ZeroSide/DUTAssemblyBootstrapAllCore.lean
-Zeta23/ZeroSide/DUTAssemblyC.lean
-Zeta23/ZeroSide/DUTCoreFallback.lean
-Zeta23/ZeroSide/DUTPhaseReplacementEventually.lean
-Zeta23/ZeroSide/DUTMainScaleAsymptotic.lean
-Zeta23/ZeroSide/DUTExtraErrorAsymptotic.lean
-Zeta23/ZeroSide/DUTSelfBootstrap.lean
-Zeta23/ZeroSide/DUTEndgameAbstract.lean
-Zeta23/ZeroSide/DUTFinalLam.lean
-Zeta23/ZeroSide/DUTFinalHeadline.lean
-Zeta23/ZeroSide/DUTHeadlineNumeric.lean
-Zeta23/ZeroSide/DUTFinalOneCertificate.lean
-```
-
-Earlier `DUT*` modules in the same directory contain the local analytic, six-point, phase, and boundary machinery feeding these endgame files.
+Eliminating the external-computation trust boundary would require a
+Lean-checkable certificate consumer or a formalization of the interval
+verification itself.
 
 ## Building
-
-This fork uses the Lean toolchain pinned by the upstream project.
 
 From the repository root:
 
@@ -122,42 +136,23 @@ lake exe cache get
 lake build
 ```
 
-For a single module during development:
-
-```powershell
-lake env lean .\Zeta23\ZeroSide\<Module>.lean
-```
-
-The milestone corresponding to the current development is:
-
-```text
-git tag: dut-67.27918
-```
-
 ## Provenance
 
-This work extends Anthropic's `zeta-23-lean` repository and relies extensively on its existing formalization, including the zero-side matrix framework, Assembly seam, Montgomery-Taylor parameter family, Riemann-von Mangoldt asymptotics, and Theorem-D endgame infrastructure.
+This work extends Anthropic's `zeta-23-lean` and retains the upstream
+repository's source, history, licensing, and attribution. The inherited
+upstream README is preserved as `README_UPSTREAM.md`.
 
-Original upstream repository:
+The external verifier engineering was adapted in part from the MIT-licensed
+`ainta/zeta-simple-zeros` project. See
+`dut-verifier/THIRD_PARTY_NOTICES.md`.
 
-https://github.com/anthropics/zeta-23-lean
+## Milestones
 
-This fork should be read together with the upstream repository's license, attribution, and original documentation.
+The earlier Lean-only conditional milestone is tagged:
 
-## Related work
+```text
+dut-67.27918
+```
 
-The separate project [`ainta/zeta-simple-zeros`](https://github.com/ainta/zeta-simple-zeros) develops a different, stronger seven-point/stability approach and reports a `67.3008528%` result with an Arb-based external verifier.
-
-That architecture is not currently imported into this DUT proof chain. It is best treated as related work and a possible source of verifier engineering or a future stronger branch.
-
-## Near-term roadmap
-
-1. Pick one explicit rational `λ < 1` for which the Lean rate remains strictly above `0.6727918`.
-2. Implement or adapt a rigorous finite verifier for the exact `DUTSharpVerifierCertificate` obligation at that `λ`.
-3. Attach the resulting certificate/verifier artifact to this repository.
-4. Replace the remaining certificate hypothesis by a checked concrete theorem.
-5. Package the resulting unconditional one-`λ` headline theorem as the next tagged milestone.
-
----
-
-**Current milestone:** formal endgame closed; one finite verifier certificate remains.
+The external-verifier/bridge milestone should be tagged separately after the
+final verifier artifacts are committed.
