@@ -152,10 +152,10 @@ private lemma dutTrigBox_double
       nlinarith [hsin_sq_lo_q]
   }
 
-/-- Exact certified numerical lower bound:
-`dutHeadlineRate > 0.6727918`. -/
-theorem dutHeadlineRate_gt_6727918 :
-    (3363959 : ℝ) / 5000000 < dutHeadlineRate := by
+/-- Slightly stronger exact certified numerical lower bound, retained to
+provide a concrete margin for a fixed rational lambda below 1. -/
+theorem dutHeadlineRate_gt_6727928 :
+    (840991 : ℝ) / 1250000 < dutHeadlineRate := by
   let u : ℝ := (Real.sqrt 2)⁻¹
   let x0 : ℝ := u / 16
 
@@ -361,7 +361,7 @@ theorem dutHeadlineRate_gt_6727918 :
   have hsinpos : 0 < Real.sin u :=
     lt_of_lt_of_le (mul_pos hu0 ha4pos) hsin
 
-  let req : ℝ := 672493845343 / 1000000000000
+  let req : ℝ := 168123710807 / 250000000000
 
   have hrat :
       s4.d < (3 / 2 - req) * s4.a := by
@@ -414,6 +414,12 @@ theorem dutHeadlineRate_gt_6727918 :
   rw [lt_div_iff₀ hden]
   norm_num [req] at hHD ⊢
   linarith
+
+/-- The originally advertised 67.27918% numerical bound follows
+immediately from the slightly stronger certified margin above. -/
+theorem dutHeadlineRate_gt_6727918 :
+    (3363959 : ℝ) / 5000000 < dutHeadlineRate := by
+  linarith [dutHeadlineRate_gt_6727928]
 
 /-- Fully explicit dyadic headline at 67.27918%, conditional only on the
 uniform external DUT verifier contract. -/
