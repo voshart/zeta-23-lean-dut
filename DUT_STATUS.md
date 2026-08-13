@@ -1,88 +1,97 @@
-# DUT 67.27918% milestone status
+# DUT formalization status
 
-## Result
+## Current result
 
-This fork contains a Lean 4 formalization of the full DUT deduction of the
-asymptotic lower bound
+**Rigorous computer-assisted 67.27918% simple-zero lower bound.**
 
-**67.27918%**
-
-for simple zeros on the critical line, together with a rigorous external Arb
-verification of the remaining finite six-point inequality at
+Baseline and refinement:
 
 ```text
-lambda = 999999999 / 1000000000.
+Anthropic Theorem D: approximately 67.250070%
+DUT milestone:       67.27918%
+gain:                approximately +0.02911 percentage points
 ```
 
-## Lean endpoint
-
-The final Lean theorem at the external-computation boundary is
+Final Lean endpoint:
 
 ```lean
-Zeta23.ZeroSide.RankTraceMult.dut_thmD₀_simple_6727918_of_scaleFree_certificate
+Zeta23.ZeroSide.RankTraceMult.dut_thmD₀_simple_6727918_of_span_certificate
 ```
 
-with hypothesis
+External finite proposition:
 
 ```lean
-DUTFixedScaleFreeSharpCertificate
+DUTFixedScaleFreeSpanCertificate
 ```
 
-The Lean development proves that this hypothesis is exactly the scale-free
-finite statement evaluated by `dut-verifier/verify_dut_six.py`.
-
-## External verifier result
-
-A successful run produced:
-
-```json
-{
-  "verified": true,
-  "lambda": "999999999/1000000000",
-  "eta": "27/20000",
-  "R_verifier": "189/20",
-  "target": "5103/400000",
-  "grid": 4000,
-  "precision_bits": 128,
-  "nodes": 68772,
-  "splits": 30498,
-  "maximum_depth": 32
-}
-```
-
-The full report is stored in:
+Fixed verifier parameter:
 
 ```text
-dut-verifier/dut-six-certificate.json
+lambda = 999999999 / 1000000000
 ```
 
-## Interpretation
-
-The result should be described as a **computer-assisted Lean formalization**:
-
-- all deductions from the finite six-point certificate through the 67.27918%
-  asymptotic headline are checked by Lean;
-- the exact kernel/coordinate bridge to the finite verifier is checked by Lean;
-- the remaining finite inequality is rigorously checked externally using
-  Arb/FLINT.
-
-It should not be described as fully kernel-checked end-to-end unless the
-external interval certificate is later consumed and verified inside Lean.
-
-## Built modules added at the final stage
+Recorded Arb result:
 
 ```text
-DUTFixedLambdaNumeric.lean
-DUTVerifierScaleFreePrelude.lean
-DUTVerifierKernelBridge.lean
-DUTVerifierCertificateBridge.lean
+verified: true
 ```
 
-The milestone prior to verifier closure was tagged:
+## Distinctive proof features
 
-```text
-dut-67.27918
-```
+1. **Information recovery.** DUT returns to the stronger upstream rank-trace
+   inequality before the leak-free relaxation replaces actual local atom
+   information by the worst-case bound `1`.
 
-A later release/tag should be created after the verifier artifacts and final
-bridge modules are committed.
+2. **Five-gap finite reduction.** The new finite input becomes an inequality
+   on five nonnegative consecutive gaps with total span at most `9.45`.
+
+3. **Six-phase globalization.** Six residue classes of consecutive six-point
+   blocks turn the local defect into a global asymptotic saving.
+
+4. **Self-bootstrap.** The saving contains the simple-zero count itself;
+   rearrangement feeds part of that improvement back into the final bound.
+
+5. **Buffered verifier margin.** The external computation proves the stronger
+   `9.45` cutoff while the downstream theorem only spends `9.40`.
+
+6. **Harmless fallback.** With fewer than six core points, the extra saving
+   disappears and the proof reduces to Anthropic's original inequality.
+
+7. **One exact external computation.** The final proof pins the verifier to
+   `lambda = 999999999 / 1000000000`.
+
+## Exact matching chain
+
+Lean proves:
+
+1. the DUT global proof chain;
+2. the exact fixed-parameter numerical reduction;
+3. physical sharp kernel = scale-free sinc kernel;
+4. physical certificate = scale-free matrix certificate;
+5. matrix Gram energy = the verifier's 15-pair scalar energy;
+6. all-span positive-part certificate = span-`<=9.45` search certificate.
+
+Thus the proposition exposed at the external boundary matches the actual
+finite Arb search analytically, algebraically, and in domain.
+
+## Trust boundary
+
+Lean checks the formal proof and exact reduction.
+
+Arb/FLINT checks the finite interval search externally.
+
+## Attribution
+
+- **GPT-5.6 Sol:** primary producer of the new DUT
+  mathematical/formal/verifier work.
+- **Daniel Voshart:** experiment conception, funding and operation, validation
+  loop, reproducibility, repository maintenance, publication decisions.
+- **Anthropic/upstream:** foundational formalization.
+- **Other consulted works/software:** see `WORKS_CONSULTED.md`.
+
+
+## Documentation provenance
+
+This status document was drafted by GPT-5.6 Sol and published by Daniel
+Voshart. It is a third-person project record, not a statement written in
+Voshart's voice.
